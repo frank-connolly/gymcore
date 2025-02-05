@@ -22,6 +22,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.flywaydb:flyway-core:11.3.1")
     implementation("org.flywaydb:flyway-database-postgresql:11.3.1")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0") // Version must be specified explicitly
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
