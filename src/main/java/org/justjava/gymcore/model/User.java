@@ -14,7 +14,9 @@ public class User {
 
     private String name;
     private String email;
-    private String role; // 'MEMBER', 'TRAINER', 'ADMIN'
+
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
 
     @ManyToOne
     @JoinColumn(name = "membership_type_id")
@@ -22,7 +24,7 @@ public class User {
 
     public User() {}
 
-    public User(String name, String email, String role, MembershipType membershipType) {
+    public User(String name, String email, UserRole role, MembershipType membershipType) {
         this.name = name;
         this.email = email;
         this.role = role;
@@ -53,11 +55,11 @@ public class User {
         this.email = email;
     }
 
-    public String getRole() {
+    public UserRole getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(UserRole role) {
         this.role = role;
     }
 
