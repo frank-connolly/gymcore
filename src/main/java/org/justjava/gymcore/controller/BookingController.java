@@ -1,5 +1,6 @@
 package org.justjava.gymcore.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.justjava.gymcore.model.Booking;
 import org.justjava.gymcore.service.BookingService;
 import org.springframework.http.HttpStatus;
@@ -8,14 +9,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/bookings")
 public class BookingController {
 
     private final BookingService bookingService;
-    public BookingController(BookingService bookingService) {
-        this.bookingService = bookingService;
-    }
 
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {

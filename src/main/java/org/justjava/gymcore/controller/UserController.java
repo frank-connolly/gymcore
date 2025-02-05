@@ -1,5 +1,6 @@
 package org.justjava.gymcore.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.justjava.gymcore.model.User;
 import org.justjava.gymcore.service.UserService;
 import org.springframework.http.HttpStatus;
@@ -8,14 +9,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {

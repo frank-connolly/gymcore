@@ -1,19 +1,17 @@
 package org.justjava.gymcore.config;
 
+import lombok.RequiredArgsConstructor;
 import org.flywaydb.core.Flyway;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+@RequiredArgsConstructor
 @Configuration
 @Profile("dev")
 public class DevDatabaseInitializer implements CommandLineRunner {
 
     private final Flyway flyway;
-
-    public DevDatabaseInitializer(Flyway flyway) {
-        this.flyway = flyway;
-    }
 
     @Override
     public void run(String... args) {
