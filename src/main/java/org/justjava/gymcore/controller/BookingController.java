@@ -1,6 +1,7 @@
 package org.justjava.gymcore.controller;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.justjava.gymcore.model.Booking;
 import org.justjava.gymcore.service.BookingService;
 import org.springframework.http.HttpStatus;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/bookings")
@@ -18,12 +20,14 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
+        log.info("Received request to create a booking");
         Booking created = bookingService.createBooking(booking);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Booking> getBooking(@PathVariable Long id) {
+        log.info("Received request to fetch booking with ID: {}", id);
         return bookingService.getBooking(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -31,18 +35,31 @@ public class BookingController {
 
     @GetMapping
     public List<Booking> getAllBookings() {
+        log.info("Received request to fetch all bookings");
         return bookingService.getAllBookings();
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Booking> updateBooking(@PathVariable Long id, @RequestBody Booking booking) {
-        Booking updated = bookingService.updateBooking(id, booking);
-        return ResponseEntity.ok(updated);
+        log.info("Received request to update booking with ID: {}", id);
+        try {
+            Booking updated = bookingService.updateBooking(id, booking);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            log.error("Error while updating booking with ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBooking(@PathVariable Long id) {
-        bookingService.deleteBooking(id);
-        return ResponseEntity.noContent().build();
+        log.info("Received request to delete booking with ID: {}", id);
+        try {
+            bookingService.deleteBooking(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Error while deleting booking with ID {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }
