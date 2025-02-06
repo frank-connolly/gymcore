@@ -1,59 +1,83 @@
 package org.justjava.gymcore.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.justjava.gymcore.model.MembershipType;
 import org.justjava.gymcore.repository.MembershipTypeRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+import static org.mockito.BDDMockito.given;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+@WebMvcTest(MembershipTypeController.class)
 class MembershipTypeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    @MockitoBean
     private MembershipTypeRepository repository;
 
-    @BeforeEach
-    public void setup() {
-        // Clear all records before each test to ensure a clean test environment.
-        repository.deleteAll();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Test
+    void createMembershipType_returnsCreatedMembershipType() throws Exception {
+        var mt = new MembershipType("Premium", "Access to all classes", new BigDecimal("99.99"));
+        var savedMt = new MembershipType("Premium", "Access to all classes", new BigDecimal("99.99"));
+        savedMt.setId(1L);
+        // Use any(MembershipType.class) matcher to avoid strict instance matching issues
+        given(repository.save(any(MembershipType.class))).willReturn(savedMt);
+
+        mockMvc.perform(post("/api/membership-types")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(mt)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1L))
+                .andExpect(jsonPath("$.name").value("Premium"));
+
+        verify(repository).save(any(MembershipType.class));
     }
 
     @Test
-    void testCreateAndGetMembershipType() throws Exception {
-        // JSON payload to create a new MembershipType.
-        String membershipJson = """
-            {
-                "name": "Premium",
-                "description": "Access to all classes and facilities",
-                "price": 99.99
-            }
-            """;
+    void getMembershipType_returnsMembershipType() throws Exception {
+        var mt = new MembershipType("Basic", "Basic membership", new BigDecimal("29.99"));
+        mt.setId(2L);
+        given(repository.findById(2L)).willReturn(Optional.of(mt));
 
-        // POST request to create a new membership type.
-        mockMvc.perform(post("/api/membership-types")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(membershipJson))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id", notNullValue()))
-                .andExpect(jsonPath("$.name", is("Premium")));
+        mockMvc.perform(get("/api/membership-types/2"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(2L))
+                .andExpect(jsonPath("$.name").value("Basic"));
 
-        // GET request to retrieve all membership types.
+        verify(repository).findById(2L);
+    }
+
+    @Test
+    void getAllMembershipTypes_returnsList() throws Exception {
+        var mt1 = new MembershipType("Basic", "Basic membership", new BigDecimal("29.99"));
+        mt1.setId(1L);
+        var mt2 = new MembershipType("Premium", "Access to all classes", new BigDecimal("99.99"));
+        mt2.setId(2L);
+        var types = List.of(mt1, mt2);
+        given(repository.findAll()).willReturn(types);
+
         mockMvc.perform(get("/api/membership-types"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].name", is("Premium")));
+                .andExpect(jsonPath("$.length()").value(types.size()))
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[1].id").value(2L));
+
+        verify(repository).findAll();
     }
 }
