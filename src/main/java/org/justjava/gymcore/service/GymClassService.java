@@ -1,5 +1,6 @@
 package org.justjava.gymcore.service;
 
+import lombok.RequiredArgsConstructor;
 import org.justjava.gymcore.model.GymClass;
 import org.justjava.gymcore.repository.GymClassRepository;
 import org.springframework.stereotype.Service;
@@ -7,12 +8,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class GymClassService {
 
     private final GymClassRepository gymClassRepository;
-    public GymClassService(GymClassRepository gymClassRepository) {
-        this.gymClassRepository = gymClassRepository;
-    }
 
     public GymClass createGymClass(GymClass gymClass) {
         return gymClassRepository.save(gymClass);

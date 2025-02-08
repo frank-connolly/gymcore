@@ -1,5 +1,6 @@
 package org.justjava.gymcore.controller;
 
+import lombok.RequiredArgsConstructor;
 import org.justjava.gymcore.model.GymClass;
 import org.justjava.gymcore.service.GymClassService;
 import org.springframework.http.HttpStatus;
@@ -8,14 +9,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/classes")
 public class GymClassController {
 
     private final GymClassService gymClassService;
-    public GymClassController(GymClassService gymClassService) {
-        this.gymClassService = gymClassService;
-    }
 
     @PostMapping
     public ResponseEntity<GymClass> createGymClass(@RequestBody GymClass gymClass) {

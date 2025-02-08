@@ -1,6 +1,7 @@
 package org.justjava.gymcore.controller;
 
 
+import lombok.RequiredArgsConstructor;
 import org.justjava.gymcore.model.MembershipType;
 import org.justjava.gymcore.repository.MembershipTypeRepository;
 import org.springframework.http.HttpStatus;
@@ -9,15 +10,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/membership-types")
 public class MembershipTypeController {
 
     private final MembershipTypeRepository repository;
-
-    public MembershipTypeController(MembershipTypeRepository repository) {
-        this.repository = repository;
-    }
 
     @PostMapping
     public ResponseEntity<MembershipType> createMembershipType(@RequestBody MembershipType membershipType) {
