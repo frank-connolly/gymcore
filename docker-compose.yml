@@ -10,5 +10,36 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+
+  keycloak:
+    image: keycloak/keycloak:latest
+    container_name: gym-keycloak
+    environment:
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KEYCLOAK_SSL_REQUIRED: none
+      KC_HOSTNAME_STRICT_BACKCHANNEL: false
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8080
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://gym-postgres/gymdb
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: admin
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8100:8080"
+      - "9000:9000"
+    command:
+      - start-dev
+    depends_on:
+      - postgres
+
+
+
 volumes:
   pgdata:
+
+
