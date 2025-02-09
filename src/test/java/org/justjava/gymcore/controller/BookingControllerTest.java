@@ -8,12 +8,16 @@ import org.justjava.gymcore.model.User;
 import org.justjava.gymcore.model.UserRole;
 import org.justjava.gymcore.service.BookingService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -40,12 +44,12 @@ class BookingControllerTest {
         member.setId(1L);
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(2L);
-        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), 20, trainer);
+        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), LocalDateTime.of(2025, 3, 5, 9, 0), 20, trainer);
         gymClass.setId(10L);
         var booking = new Booking(member, gymClass);
         var savedBooking = new Booking(member, gymClass);
         savedBooking.setId(100L);
-        given(bookingService.createBooking(booking)).willReturn(savedBooking);
+        given(bookingService.createBooking(booking)).willReturn((ResponseEntity) ResponseEntity.created(new URI("/api/bookings")).body(savedBooking));
 
         mockMvc.perform(post("/api/bookings")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -62,7 +66,7 @@ class BookingControllerTest {
         member.setId(1L);
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(2L);
-        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), 20, trainer);
+        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), LocalDateTime.of(2025, 3, 5, 9, 0), 20, trainer);
         gymClass.setId(10L);
         var booking = new Booking(member, gymClass);
         booking.setId(100L);
@@ -81,7 +85,7 @@ class BookingControllerTest {
         member.setId(1L);
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(2L);
-        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), 20, trainer);
+        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), LocalDateTime.of(2025, 3, 5, 9, 0), 20, trainer);
         gymClass.setId(10L);
         var booking = new Booking(member, gymClass);
         booking.setId(100L);
@@ -102,7 +106,7 @@ class BookingControllerTest {
         member.setId(1L);
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(2L);
-        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), 20, trainer);
+        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), LocalDateTime.of(2025, 3, 5, 9, 0), 20, trainer);
         gymClass.setId(10L);
         var updatedBooking = new Booking(member, gymClass);
         updatedBooking.setId(100L);

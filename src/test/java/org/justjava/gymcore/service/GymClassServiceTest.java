@@ -28,8 +28,8 @@ class GymClassServiceTest {
     void createGymClass_savesGymClass() {
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(10L);
-        var gymClass = new GymClass("Yoga", "Morning Yoga", LocalDateTime.of(2025, 2, 5, 8, 0), 20, trainer);
-        var savedGymClass = new GymClass("Yoga", "Morning Yoga", LocalDateTime.of(2025, 2, 5, 8, 0), 20, trainer);
+        var gymClass = new GymClass("Yoga", "Morning Yoga", LocalDateTime.of(2025, 2, 5, 8, 0), LocalDateTime.of(2025, 2, 5, 9, 0), 20, trainer);
+        var savedGymClass = new GymClass("Yoga", "Morning Yoga", LocalDateTime.of(2025, 2, 5, 8, 0), LocalDateTime.of(2025, 2, 5, 9, 0), 20, trainer);
         savedGymClass.setId(1L);
         when(gymClassRepository.save(gymClass)).thenReturn(savedGymClass);
 

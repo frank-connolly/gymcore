@@ -1,9 +1,9 @@
 package org.justjava.gymcore.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.coyote.BadRequestException;
 import org.justjava.gymcore.model.Booking;
 import org.justjava.gymcore.service.BookingService;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,9 +17,8 @@ public class BookingController {
     private final BookingService bookingService;
 
     @PostMapping
-    public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
-        Booking created = bookingService.createBooking(booking);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    public ResponseEntity<?> createBooking(@RequestBody Booking booking) throws BadRequestException {
+       return bookingService.createBooking(booking);
     }
 
     @GetMapping("/{id}")
