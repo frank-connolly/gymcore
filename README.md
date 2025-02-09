@@ -1,4 +1,22 @@
-## Dev Profile
+# Welcome to GymCore
+## _A Just Java Project_ ☕
+
+GymCore is a simple RESTful API for managing gym members and their subscriptions.
+
+## Group Project Basics    
+Before you open a PR you must:  
+- Ensure all tests are passing ✅ 
+- Run the application locally and test its working as expected ✅
+
+### The Stack:
+- Java
+- Spring Boot
+- PostgresDB (H2 in-memory DB for tests)
+- Keycloak (for authentication)
+- Docker
+- GitHub Actions
+
+### Dev Profile
 Specify 'dev' profile when running the application to trigger the dev profile. This profile will add basic test data to the local DB. 
 
 If running via command line use `--spring.profiles.active=dev`
