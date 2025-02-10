@@ -1,5 +1,6 @@
 package org.justjava.gymcore.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,7 +21,12 @@ public class GymClass {
     private String description;
 
     @Column(name = "scheduled_at")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime scheduledAt;
+
+    @Column(name = "schedule_end")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime scheduleEnd;
 
     private int capacity;
 
@@ -28,10 +34,11 @@ public class GymClass {
     @JoinColumn(name = "trainer_id", nullable = false)
     private User trainer;
 
-    public GymClass(String title, String description, LocalDateTime scheduledAt, int capacity, User trainer) {
+    public GymClass(String title, String description, LocalDateTime scheduledAt, LocalDateTime scheduledEnd, int capacity, User trainer) {
         this.title = title;
         this.description = description;
         this.scheduledAt = scheduledAt;
+        this.scheduleEnd = scheduledEnd;
         this.capacity = capacity;
         this.trainer = trainer;
     }

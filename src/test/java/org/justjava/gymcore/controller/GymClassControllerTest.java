@@ -37,8 +37,8 @@ class GymClassControllerTest {
     void createGymClass_returnsCreatedGymClass() throws Exception {
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(10L);
-        var gymClass = new GymClass("Yoga", "Morning Yoga", LocalDateTime.of(2025, 2, 5, 8, 0), 20, trainer);
-        var savedGymClass = new GymClass("Yoga", "Morning Yoga", LocalDateTime.of(2025, 2, 5, 8, 0), 20, trainer);
+        var gymClass = new GymClass("Yoga", "Morning Yoga", LocalDateTime.of(2025, 2, 5, 8, 0), LocalDateTime.of(2025, 2, 5, 9, 0), 20, trainer);
+        var savedGymClass = new GymClass("Yoga", "Morning Yoga", LocalDateTime.of(2025, 2, 5, 8, 0), LocalDateTime.of(2025, 2, 5, 9, 0), 20, trainer);
         savedGymClass.setId(1L);
 
         given(gymClassService.createGymClass(gymClass)).willReturn(savedGymClass);
@@ -58,7 +58,7 @@ class GymClassControllerTest {
     void getGymClass_returnsGymClass() throws Exception {
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(10L);
-        var gymClass = new GymClass("Pilates", "Evening Pilates", LocalDateTime.of(2025, 2, 5, 18, 0), 15, trainer);
+        var gymClass = new GymClass("Pilates", "Evening Pilates", LocalDateTime.of(2025, 2, 5, 18, 0), LocalDateTime.of(2025, 2, 5, 9, 0), 15, trainer);
         gymClass.setId(2L);
         given(gymClassService.getGymClass(2L)).willReturn(Optional.of(gymClass));
 
@@ -75,9 +75,9 @@ class GymClassControllerTest {
     void getAllGymClasses_returnsList() throws Exception {
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(10L);
-        var gc1 = new GymClass("Yoga", "Morning Yoga", LocalDateTime.of(2025, 2, 5, 8, 0), 20, trainer);
+        var gc1 = new GymClass("Yoga", "Morning Yoga", LocalDateTime.of(2025, 2, 5, 8, 0), LocalDateTime.of(2025, 2, 5, 9, 0), 20, trainer);
         gc1.setId(1L);
-        var gc2 = new GymClass("Pilates", "Evening Pilates", LocalDateTime.of(2025, 2, 5, 18, 0), 15, trainer);
+        var gc2 = new GymClass("Pilates", "Evening Pilates", LocalDateTime.of(2025, 2, 5, 18, 0), LocalDateTime.of(2025, 2, 5, 9, 0), 15, trainer);
         gc2.setId(2L);
         var gymClasses = List.of(gc1, gc2);
         given(gymClassService.getAllGymClasses()).willReturn(gymClasses);
@@ -95,7 +95,7 @@ class GymClassControllerTest {
     void updateGymClass_returnsUpdatedGymClass() throws Exception {
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(10L);
-        var updatedGymClass = new GymClass("Zumba", "Dance workout", LocalDateTime.of(2025, 2, 6, 9, 0), 25, trainer);
+        var updatedGymClass = new GymClass("Zumba", "Dance workout", LocalDateTime.of(2025, 2, 6, 9, 0), LocalDateTime.of(2025, 2, 5, 9, 0), 25, trainer);
         updatedGymClass.setId(3L);
         given(gymClassService.updateGymClass(3L, updatedGymClass)).willReturn(updatedGymClass);
 
