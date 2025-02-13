@@ -28,4 +28,9 @@ class GymcoreApplicationTests {
         }
     }
 
+    @Test
+    void fail() throws Exception {
+        throw new Exception("Test failed");
+    }
+
 }
