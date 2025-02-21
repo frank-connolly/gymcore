@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run Gymcore" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="org.justjava.gymcore.GymcoreApplication" />
+    <module name="gymcore.main" />
+    <selectedOptions>
+      <option name="environmentVariables" visible="false" />
+    </selectedOptions>
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.justjava.gymcore.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
