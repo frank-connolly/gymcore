@@ -16,9 +16,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
@@ -29,21 +32,33 @@ public class BookingService {
     private final UserRepository userRepository;
     private final GymClassRepository gymClassRepository;
 
+    private final Map<Long, List<User>> waitlist = new ConcurrentHashMap<>();
+
     public ResponseEntity<?> createBooking(Booking booking) throws BadRequestException {
         log.info("Creating new booking for user: {}", booking.getUser());
 
-        //Validation of users
-        this.validateUsers(booking);
+        validateUsers(booking);
+        validateGymClassTimePeriod(booking);
 
-        this.validateGymClassTimePeriod(booking);
+        GymClass gymClass = booking.getGymClass();
 
-        if (this.checkTimePeriodForTrainer(booking)) {
-            this.createGymClass(booking);
-            Booking bookedEntity = bookingRepository.save(booking);
-            return new ResponseEntity<>(bookedEntity, HttpStatus.CREATED);
+        if (isClassFull(gymClass)) {
+            return addToWaitlist(booking.getUser(), gymClass);
         }
 
-        return new ResponseEntity<>(new ResponseDetail("This trainer already has gym class on requested time period."), HttpStatus.BAD_REQUEST);
+        return confirmBooking(booking);
+    }
+
+    private ResponseEntity<?> confirmBooking(Booking booking) {
+        Booking bookedEntity = bookingRepository.save(booking);
+        log.info("Booking confirmed for user {} in class {}", booking.getUser().getId(), booking.getGymClass().getId());
+        return new ResponseEntity<>(bookedEntity, HttpStatus.CREATED);
+    }
+
+    private ResponseEntity<?> addToWaitlist(User user, GymClass gymClass) {
+        waitlist.computeIfAbsent(gymClass.getId(), k -> new ArrayList<>()).add(user);
+        log.info("User {} added to waitlist for class {}", user.getId(), gymClass.getId());
+        return new ResponseEntity<>(new ResponseDetail("Class is full. You are now on the waitlist."), HttpStatus.OK);
     }
 
     private boolean checkTimePeriodForTrainer(Booking booking) {
@@ -89,10 +104,36 @@ public class BookingService {
             return bookingRepository.save(bookingDetails);
         }
 
-        public void deleteBooking (Long id){
-            checkIfBookingExists(id);
-            bookingRepository.deleteById(id);
+    private boolean isClassFull(GymClass gymClass) {
+        long confirmedBookings = bookingRepository.countByGymClass(gymClass);
+        return confirmedBookings >= gymClass.getCapacity();
+    }
+
+    public void deleteBooking(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+        bookingRepository.delete(booking);
+        log.info("Booking ID {} deleted.", id);
+
+        promoteWaitlistedUser(booking.getGymClass());
+    }
+
+    private void promoteWaitlistedUser(GymClass gymClass) {
+        List<User> waitlistedUsers = waitlist.get(gymClass.getId());
+        if (waitlistedUsers != null && !waitlistedUsers.isEmpty()) {
+            User nextUser = waitlistedUsers.remove(0);
+            Booking promotedBooking = new Booking(nextUser, gymClass);
+            bookingRepository.save(promotedBooking);
+
+            log.info("User {} moved from waitlist to class {}", nextUser.getId(), gymClass.getId());
+
+            if (waitlistedUsers.isEmpty()) {
+                waitlist.remove(gymClass.getId());
+            }
         }
+    }
+
 
         private void checkIfBookingExists (Long id){
             if (!bookingRepository.existsById(id)) {
