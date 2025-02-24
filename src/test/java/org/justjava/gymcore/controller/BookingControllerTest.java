@@ -44,7 +44,7 @@ class BookingControllerTest {
         member.setId(1L);
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(2L);
-        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), LocalDateTime.of(2025, 3, 5, 9, 0), 20, trainer);
+        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), LocalDateTime.of(2025, 3, 5, 9, 0), 2, trainer);
         gymClass.setId(10L);
         var booking = new Booking(member, gymClass);
         var savedBooking = new Booking(member, gymClass);
@@ -58,6 +58,35 @@ class BookingControllerTest {
                 .andExpect(jsonPath("$.id").value(100L));
 
         verify(bookingService).createBooking(booking);
+    }
+
+    @Test
+    void createBooking_addsToWaitlist_whenClassIsFull() throws Exception {
+        var member = new User("Waitlisted Member", "waitlist@example.com", UserRole.MEMBER, null);
+        member.setId(3L);
+        var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
+        trainer.setId(2L);
+        var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), LocalDateTime.of(2025, 3, 5, 9, 0), 2, trainer);
+        gymClass.setId(10L);
+        var booking = new Booking(member, gymClass);
+
+        given(bookingService.createBooking(booking)).willReturn(ResponseEntity.ok(new ResponseEntity<>("Class is full. You are now on the waitlist.", HttpStatus.OK)));
+
+        mockMvc.perform(post("/api/bookings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(booking)))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Class is full. You are now on the waitlist."));
+
+        verify(bookingService).createBooking(booking);
+    }
+
+    @Test
+    void deleteBooking_promotesWaitlistedUser() throws Exception {
+        mockMvc.perform(delete("/api/bookings/100"))
+                .andExpect(status().isNoContent());
+
+        verify(bookingService).deleteBooking(100L);
     }
 
     @Test
