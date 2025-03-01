@@ -8,6 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     // Count confirmed bookings for a class
-    @Query("SELECT COUNT(b) FROM Booking b WHERE b.gymClass = :gymClass")
-    long countByGymClass(@Param("gymClass") GymClass gymClass);
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.gymClass.id = :gymClassId")
+    long countByGymClassId(@Param("gymClassId") Long gymClassId);
 }

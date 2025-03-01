@@ -3,14 +3,12 @@ package org.justjava.gymcore.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
-import org.justjava.gymcore.model.GymClass;
-import org.justjava.gymcore.model.UserRole;
-import org.justjava.gymcore.model.Booking;
-import org.justjava.gymcore.model.User;
+import org.justjava.gymcore.model.*;
 import org.justjava.gymcore.model.dto.ResponseDetail;
 import org.justjava.gymcore.repository.BookingRepository;
 import org.justjava.gymcore.repository.GymClassRepository;
 import org.justjava.gymcore.repository.UserRepository;
+import org.justjava.gymcore.repository.WaitlistRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -31,6 +29,7 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final GymClassRepository gymClassRepository;
+    private final WaitlistRepository waitlistRepository;
 
     private final Map<Long, List<User>> waitlist = new ConcurrentHashMap<>();
 
@@ -56,7 +55,13 @@ public class BookingService {
     }
 
     private ResponseEntity<?> addToWaitlist(User user, GymClass gymClass) {
-        waitlist.computeIfAbsent(gymClass.getId(), k -> new ArrayList<>()).add(user);
+
+        if (waitlistRepository.existsByUserIdAndGymClassId(user.getId(), gymClass.getId())) {
+            return new ResponseEntity<>(new ResponseDetail("You are already on the waitlist."), HttpStatus.OK);
+        }
+
+        Waitlist waitlistEntry = new Waitlist(user, gymClass);
+        waitlistRepository.save(waitlistEntry);
         log.info("User {} added to waitlist for class {}", user.getId(), gymClass.getId());
         return new ResponseEntity<>(new ResponseDetail("Class is full. You are now on the waitlist."), HttpStatus.OK);
     }
@@ -105,7 +110,7 @@ public class BookingService {
         }
 
     private boolean isClassFull(GymClass gymClass) {
-        long confirmedBookings = bookingRepository.countByGymClass(gymClass);
+        long confirmedBookings = bookingRepository.countByGymClassId(gymClass.getId());
         return confirmedBookings >= gymClass.getCapacity();
     }
 
@@ -120,17 +125,14 @@ public class BookingService {
     }
 
     private void promoteWaitlistedUser(GymClass gymClass) {
-        List<User> waitlistedUsers = waitlist.get(gymClass.getId());
-        if (waitlistedUsers != null && !waitlistedUsers.isEmpty()) {
-            User nextUser = waitlistedUsers.remove(0);
-            Booking promotedBooking = new Booking(nextUser, gymClass);
+        List<Waitlist> waitlistedUsers = waitlistRepository.findByGymClassId(gymClass.getId());
+        if (!waitlistedUsers.isEmpty()) {
+            Waitlist nextInLine = waitlistedUsers.get(0);
+            Booking promotedBooking = new Booking(nextInLine.getUser(), gymClass);
             bookingRepository.save(promotedBooking);
+            waitlistRepository.delete(nextInLine);
 
-            log.info("User {} moved from waitlist to class {}", nextUser.getId(), gymClass.getId());
-
-            if (waitlistedUsers.isEmpty()) {
-                waitlist.remove(gymClass.getId());
-            }
+            log.info("User {} moved from waitlist to class {}", nextInLine.getUser().getId(), gymClass.getId());
         }
     }
 
