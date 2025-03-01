@@ -63,17 +63,20 @@ class BookingControllerTest {
     }
     @Test
     void createBooking_addsToWaitlist_whenClassIsFull() throws Exception {
-        given(bookingService.createBooking(any(Booking.class)))
-                .willReturn(ResponseEntity.ok().body(null));
+        // Mock response for when class is full
+        when(bookingService.createBooking(any(Booking.class)))
+                .thenAnswer(invocation -> ResponseEntity.ok("Class is full. You are now on the waitlist."));
 
         mockMvc.perform(post("/api/bookings")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
+                        .content("{\"user\":{\"id\":1}, \"gymClass\":{\"id\":10}}")) // Ensure valid JSON request body
                 .andExpect(status().isOk())
-                .andExpect(content().string(" "));
+                .andExpect(content().string("Class is full. You are now on the waitlist."));
 
         verify(bookingService).createBooking(any(Booking.class));
     }
+
+
 
     @Test
     void deleteBooking_promotesWaitlistedUser() throws Exception {
@@ -93,7 +96,6 @@ class BookingControllerTest {
         var trainer = new User("Trainer", "trainer@example.com", UserRole.TRAINER, null);
         trainer.setId(2L);
         var gymClass = new GymClass("Spinning", "Indoor cycling", LocalDateTime.of(2025, 2, 5, 9, 0), LocalDateTime.of(2025, 3, 5, 9, 0), 20, trainer);
-        gymClass.setId(10L);
         var booking = new Booking(member, gymClass);
         booking.setId(100L);
         given(bookingService.getBooking(100L)).willReturn(Optional.of(booking));
