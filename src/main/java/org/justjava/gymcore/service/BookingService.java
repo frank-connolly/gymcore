@@ -46,7 +46,7 @@ public class BookingService {
 
     private ResponseEntity<?> confirmBooking(Booking booking) {
         Booking bookedEntity = bookingRepository.save(booking);
-        log.info("Booking confirmed for user {} in class {}", booking.getUser().getId(), booking.getGymClass().getId());
+        log.info("Booking confirmed for user {} in GymClass {}", booking.getUser().getId(), booking.getGymClass().getId());
         return new ResponseEntity<>(bookedEntity, HttpStatus.CREATED);
     }
 
