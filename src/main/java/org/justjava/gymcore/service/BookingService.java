@@ -14,12 +14,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+
 
 @Slf4j
 @Service
@@ -30,8 +28,6 @@ public class BookingService {
     private final UserRepository userRepository;
     private final GymClassRepository gymClassRepository;
     private final WaitlistRepository waitlistRepository;
-
-    private final Map<Long, List<User>> waitlist = new ConcurrentHashMap<>();
 
     public ResponseEntity<?> createBooking(Booking booking) throws BadRequestException {
         log.info("Creating new booking for user: {}", booking.getUser());

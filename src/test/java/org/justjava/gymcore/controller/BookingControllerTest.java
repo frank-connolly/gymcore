@@ -77,7 +77,6 @@ class BookingControllerTest {
     }
 
 
-
     @Test
     void deleteBooking_promotesWaitlistedUser() throws Exception {
         doNothing().when(bookingService).deleteBooking(anyLong());
