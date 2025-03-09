@@ -58,7 +58,7 @@ public class BookingService {
 
         Waitlist waitlistEntry = new Waitlist(user, gymClass);
         waitlistRepository.save(waitlistEntry);
-        log.info("User {} added to waitlist for class {}", user.getId(), gymClass.getId());
+        log.info("User {} added to waitlist for GymClass {}", user.getId(), gymClass.getId());
         return new ResponseEntity<>(new ResponseDetail("GymClass is full. You are now on the waitlist."), HttpStatus.OK);
     }
 
