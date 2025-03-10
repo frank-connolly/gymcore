@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,14 +45,14 @@ class BookingServiceTest {
         var booking = new Booking(member, gymClass);
         var savedBooking = new Booking(member, gymClass);
         savedBooking.setId(100L);
-        when(bookingRepository.save(booking)).thenReturn(savedBooking);
-        when(userRepository.findByUserIdAndUserRole(anyLong(), any(UserRole.class))).thenReturn(member);
-        when(gymClassRepository.existsByUserIdAndBookingTimePeriod(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(true);
+        lenient().when(bookingRepository.save(booking)).thenReturn(savedBooking);
+        lenient().when(userRepository.findByUserIdAndUserRole(anyLong(), any(UserRole.class))).thenReturn(member);
+        lenient().when(gymClassRepository.existsByUserIdAndBookingTimePeriod(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(true);
 
         var result = bookingService.createBooking(booking);
         Booking bookingResult = (Booking) result.getBody();
         assertNotNull(result);
-        assertEquals(100L, bookingResult.getId());
+        assertEquals(100L, Objects.requireNonNull(bookingResult).getId());
 
         verify(bookingRepository).save(booking);
     }

@@ -3,14 +3,12 @@ package org.justjava.gymcore.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
-import org.justjava.gymcore.model.GymClass;
-import org.justjava.gymcore.model.UserRole;
-import org.justjava.gymcore.model.Booking;
-import org.justjava.gymcore.model.User;
+import org.justjava.gymcore.model.*;
 import org.justjava.gymcore.model.dto.ResponseDetail;
 import org.justjava.gymcore.repository.BookingRepository;
 import org.justjava.gymcore.repository.GymClassRepository;
 import org.justjava.gymcore.repository.UserRepository;
+import org.justjava.gymcore.repository.WaitlistRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,6 +18,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -28,22 +27,39 @@ public class BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final GymClassRepository gymClassRepository;
+    private final WaitlistRepository waitlistRepository;
 
     public ResponseEntity<?> createBooking(Booking booking) throws BadRequestException {
         log.info("Creating new booking for user: {}", booking.getUser());
 
-        //Validation of users
-        this.validateUsers(booking);
+        validateUsers(booking);
+        validateGymClassTimePeriod(booking);
 
-        this.validateGymClassTimePeriod(booking);
+        GymClass gymClass = booking.getGymClass();
 
-        if (this.checkTimePeriodForTrainer(booking)) {
-            this.createGymClass(booking);
-            Booking bookedEntity = bookingRepository.save(booking);
-            return new ResponseEntity<>(bookedEntity, HttpStatus.CREATED);
+        if (isClassFull(gymClass)) {
+            return addToWaitlist(booking.getUser(), gymClass);
         }
 
-        return new ResponseEntity<>(new ResponseDetail("This trainer already has gym class on requested time period."), HttpStatus.BAD_REQUEST);
+        return confirmBooking(booking);
+    }
+
+    private ResponseEntity<?> confirmBooking(Booking booking) {
+        Booking bookedEntity = bookingRepository.save(booking);
+        log.info("Booking confirmed for user {} in GymClass {}", booking.getUser().getId(), booking.getGymClass().getId());
+        return new ResponseEntity<>(bookedEntity, HttpStatus.CREATED);
+    }
+
+    private ResponseEntity<?> addToWaitlist(User user, GymClass gymClass) {
+
+        if (waitlistRepository.existsByUserIdAndGymClassId(user.getId(), gymClass.getId())) {
+            return new ResponseEntity<>(new ResponseDetail("You are already on the waitlist."), HttpStatus.OK);
+        }
+
+        Waitlist waitlistEntry = new Waitlist(user, gymClass);
+        waitlistRepository.save(waitlistEntry);
+        log.info("User {} added to waitlist for GymClass {}", user.getId(), gymClass.getId());
+        return new ResponseEntity<>(new ResponseDetail("GymClass is full. You are now on the waitlist."), HttpStatus.OK);
     }
 
     private boolean checkTimePeriodForTrainer(Booking booking) {
@@ -89,10 +105,33 @@ public class BookingService {
             return bookingRepository.save(bookingDetails);
         }
 
-        public void deleteBooking (Long id){
-            checkIfBookingExists(id);
-            bookingRepository.deleteById(id);
+    private boolean isClassFull(GymClass gymClass) {
+        long confirmedBookings = bookingRepository.countByGymClassId(gymClass.getId());
+        return confirmedBookings >= gymClass.getCapacity();
+    }
+
+    public void deleteBooking(Long id) {
+        Booking booking = bookingRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+        bookingRepository.delete(booking);
+        log.info("Booking ID {} deleted.", id);
+
+        promoteWaitlistedUser(booking.getGymClass());
+    }
+
+    private void promoteWaitlistedUser(GymClass gymClass) {
+        List<Waitlist> waitlistedUsers = waitlistRepository.findByGymClassId(gymClass.getId());
+        if (!waitlistedUsers.isEmpty()) {
+            Waitlist nextInLine = waitlistedUsers.get(0);
+            Booking promotedBooking = new Booking(nextInLine.getUser(), gymClass);
+            bookingRepository.save(promotedBooking);
+            waitlistRepository.delete(nextInLine);
+
+            log.info("User {} moved from waitlist to class {}", nextInLine.getUser().getId(), gymClass.getId());
         }
+    }
+
 
         private void checkIfBookingExists (Long id){
             if (!bookingRepository.existsById(id)) {
